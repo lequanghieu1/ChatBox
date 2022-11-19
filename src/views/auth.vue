@@ -1,7 +1,7 @@
 <template>
   <router-link v-if="isLogin()" to="/orders">Danh sách đơn hàng</router-link>
   <div class="h-[100vh] flex justify-center items-center flex-col">
-    <div class="flex justify-between items-center">
+    <div class="flex justify-between items-center" v-if="!isLogin()"> 
       <p>App ID</p>
       <input
         type="text"
@@ -12,14 +12,14 @@
         class="border border-gray-400 pl-3 h-6 rounded-md text-xs w-1/2 placeholder:pl-3 placeholder:text-xs"
       />
     </div>
-    <div class="flex justify-around items-center mt-3">
+    <div class="flex justify-around items-center mt-3" v-if="!isLogin()">
       <p>Secret Key</p>
       <input
         v-model="secretKey"
         class="border border-gray-400 pl-3 h-6 rounded-md text-xs w-1/2 placeholder:pl-3 placeholder:text-xs"
       />
     </div>
-    <div class="flex justify-around items-center mt-3">
+    <div class="flex justify-around items-center mt-3" v-if="!isLogin()">
       <p>Return Link</p>
       <input
         v-model="returnLink"
