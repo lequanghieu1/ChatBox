@@ -47,6 +47,7 @@ const note = computed(() => {
 const getToken = async () => {
   const response = await HTTP(null, obj, null);
   obj.businessId = response.data.data.businessId
+  delete obj.accessCode
   localStorage.setItem('infoApp', JSON.stringify(obj))
   const token = response.data.data.accessToken;
   sessionStorage.setItem("token", token);

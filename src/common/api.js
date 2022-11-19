@@ -7,7 +7,7 @@ export const HTTP = async (uri, obj, data) => {
     post_data.data = JSON.stringify(data);
   }
   if (uri) {
-    version = { businessId: 136439, version: "2.0" };
+    version = { businessId: JSON.parse(localStorage.getItem('infoApp')).businessId, version: "2.0" };
   }
   return await axios.post(
     "https://chatbox-widget.botbanhang.vn/v1/proxy/nhanhvn",
