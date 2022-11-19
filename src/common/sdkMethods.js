@@ -12,16 +12,16 @@ export const initSdkApp = () => {
   }
 };
 
-export const saveConfig = access_token => {
-  let objData = {};
-  if (access_token) {
-    objData = { token: access_token };
+export const saveConfig = objData => {
+  let config = {};
+  if (objData) {
+    config = objData;
   }
   Sdk.saveConfig(
     {
       type_config: "CRM",
       brand_name: "nhanh.vn",
-      config_data: structuredClone(objData),
+      config_data: structuredClone(config),
     },
     (e, r) => {
       console.log(e);
