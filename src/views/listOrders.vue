@@ -15,6 +15,7 @@
     </div>
     <img src="../assets/icons/setting.svg" class="mx-3" @click="gotoAuth" />
   </div>
+  <p>chưa có đơn hàng nào</p> 
   <div class="mt-2" v-if="tabIndex === 1">
     <div class="mt-2" v-for="(order, index) in orderList" :key="order.id">
       <orderDetail :order="order" @editOrder="editOrder" @openOrder="openOrder" :index="index" />
@@ -54,6 +55,9 @@ const getListOrder = async () => {
   orderList.value = convertObject(response.data?.data?.data?.orders || {}).map((e) => {
     return { ...e, isOpen: false };
   });
+  if(!orderList.length){
+
+  }
 };
 const editOrder = (orderId) => {
   router.push({ path: "/orders", query: { orderId } });
