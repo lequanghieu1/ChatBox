@@ -1,28 +1,47 @@
 <template>
-  <loading v-if="!orderList.length" />
   <div class="flex justify-end">
-    <div class="w-3/5 h-[34px] bg-[#E3E8EF] rounded-lg mt-[5px] mr-5 flex items-center justify-around">
-      <button class="w-5/12 rounded-md h-[24px] text-xs" @click="resetTab" :class="
-        tabIndex === 1 ? 'bg-[#4A5667] text-white' : 'bg-[#E3E8EF] text-black'
-      ">
+    <div
+      class="w-3/5 h-[34px] bg-[#E3E8EF] rounded-lg mt-[5px] mr-5 flex items-center justify-around"
+    >
+      <button
+        class="w-5/12 rounded-md h-[24px] text-xs"
+        @click="resetTab"
+        :class="
+          tabIndex === 1 ? 'bg-[#4A5667] text-white' : 'bg-[#E3E8EF] text-black'
+        "
+      >
         Đơn hàng
       </button>
-      <button class="w-5/12 rounded-md h-[24px] text-xs" @click="tabIndex = 2" :class="
-        tabIndex === 2 ? 'bg-[#4A5667] text-white' : 'bg-[#E3E8EF] text-black'
-      ">
+      <button
+        class="w-5/12 rounded-md h-[24px] text-xs"
+        @click="tabIndex = 2"
+        :class="
+          tabIndex === 2 ? 'bg-[#4A5667] text-white' : 'bg-[#E3E8EF] text-black'
+        "
+      >
         {{ tabTwo }}
       </button>
     </div>
     <img src="../assets/icons/setting.svg" class="mx-3" @click="gotoAuth" />
   </div>
-  <p>chưa có đơn hàng nào</p> 
+  <p v-if="noRecord">chưa có đơn hàng nào</p>
   <div class="mt-2" v-if="tabIndex === 1">
     <div class="mt-2" v-for="(order, index) in orderList" :key="order.id">
-      <orderDetail :order="order" @editOrder="editOrder" @openOrder="openOrder" :index="index" />
+      <orderDetail
+        :order="order"
+        @editOrder="editOrder"
+        @openOrder="openOrder"
+        :index="index"
+      />
     </div>
   </div>
   <div class="mt-2" v-if="tabIndex === 2">
-    <createOrder :info="objEdit" class="mt-2" :isEdit="isEdit" @afterUpdate="resetTab" />
+    <createOrder
+      :info="objEdit"
+      class="mt-2"
+      :isEdit="isEdit"
+      @afterUpdate="resetTab"
+    />
   </div>
 </template>
 <script setup>
@@ -41,6 +60,7 @@ let isEdit = ref(false);
 let objEdit = ref([]);
 const router = useRouter();
 let tabIndex = ref(1);
+const noRecord = ref(true);
 const tabTwo = ref("Tạo đơn");
 
 onMounted(async () => {
@@ -50,13 +70,15 @@ onMounted(async () => {
 
 const getListOrder = async () => {
   const obj = { ...store.data };
-  obj.accessToken = sessionStorage.getItem('token')
+  obj.accessToken = sessionStorage.getItem("token");
   const response = await HTTP(`order/index`, obj, null);
-  orderList.value = convertObject(response.data?.data?.data?.orders || {}).map((e) => {
-    return { ...e, isOpen: false };
-  });
-  if(!orderList.length){
-
+  orderList.value = convertObject(response.data?.data?.data?.orders || {}).map(
+    (e) => {
+      return { ...e, isOpen: false };
+    }
+  );
+  if (orderList.length) {
+    noRecord.value = false;
   }
 };
 const editOrder = (orderId) => {
@@ -72,7 +94,12 @@ const openOrder = (index) => {
 };
 
 const gotoAuth = () => {
-  router.push({ path: "/getToken", query: { access_token: localStorage.getItem("token-chat-box").split('=')[1] } });
+  router.push({
+    path: "/getToken",
+    query: {
+      access_token: localStorage.getItem("token-chat-box").split("=")[1],
+    },
+  });
 };
 
 const resetTab = () => {
