@@ -1,18 +1,24 @@
 import { defineStore } from "pinia";
 
 export const useFormBody = defineStore("formBody", {
-    state: () => ({
-        data: {
-          appId: null,
-          secretKey: '',
-      },
-      }),
-      actions: {
-        saveForm(item) {
-          this.data = item
-        }
+  state: () => ({
+    data: {
+      appId: null,
+      secretKey: '',
     },
-    getters: {
-      getBody: (state) => state.data,
+    profile: {},
+  }),
+  actions: {
+    saveForm(item) {
+      this.data = item
     },
+    saveProfile(item) {
+      this.profile = item
+    }
+  },
+  
+  getters: {
+    getBody: (state) => state.data,
+    getProfile: (state) => state.profile,
+  },
 });

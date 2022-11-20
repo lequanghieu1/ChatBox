@@ -1,7 +1,9 @@
 <template>
-  <div class="flex justify-end">
+  <loading v-if="!orderList.length && !noRecord" />
+  <div class="flex justify-around items-center">
+    <div class="h-[24px] w-[24px]"></div>
     <div
-      class="w-3/5 h-[34px] bg-[#E3E8EF] rounded-lg mt-[5px] mr-5 flex items-center justify-around"
+      class="w-3/5 h-[34px] bg-[#E3E8EF] rounded-lg mt-[5px] flex items-center justify-around"
     >
       <button
         class="w-5/12 rounded-md h-[24px] text-xs"
@@ -22,9 +24,11 @@
         {{ tabTwo }}
       </button>
     </div>
-    <img src="../assets/icons/setting.svg" class="mx-3" @click="gotoAuth" />
+    <img src="../assets/icons/setting.svg" @click="gotoAuth" />
   </div>
-  <p v-if="noRecord">chưa có đơn hàng nào</p>
+  <div v-if="noRecord" class="flex justify-center items-center h-screen">
+    <p>chưa có đơn hàng nào</p>
+  </div>
   <div class="mt-2" v-if="tabIndex === 1">
     <div class="mt-2" v-for="(order, index) in orderList" :key="order.id">
       <orderDetail
@@ -60,8 +64,8 @@ let isEdit = ref(false);
 let objEdit = ref([]);
 const router = useRouter();
 let tabIndex = ref(1);
-const noRecord = ref(true);
 const tabTwo = ref("Tạo đơn");
+const noRecord = ref(false);
 
 onMounted(async () => {
   resetTab();
@@ -77,8 +81,8 @@ const getListOrder = async () => {
       return { ...e, isOpen: false };
     }
   );
-  if (orderList.length) {
-    noRecord.value = false;
+  if (!orderList.value.length) {
+    noRecord.value = true;
   }
 };
 const editOrder = (orderId) => {

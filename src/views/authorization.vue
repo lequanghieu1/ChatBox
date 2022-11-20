@@ -18,6 +18,7 @@ onMounted(async () => {
     check.value = true;
   }
   await initSdkApp();
+  await getProfile()
   await getConfig();
 });
 
@@ -39,5 +40,11 @@ const getConfig = () => {
       }
     }
   );
+};
+
+const getProfile = () => {
+  Sdk.getCustomerInfo((e, r) => {
+    store.saveProfile(r.data.public_profile);
+  });
 };
 </script>
