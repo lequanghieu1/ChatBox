@@ -62,7 +62,7 @@
         </select>
         <select
           id="district"
-          v-model="obj.district"
+          v-model="objEdit.customerDistrictId"
           @change="chooseDistrict"
           :disabled="!districts.length || isEdit"
           class="border border-gray-400 rounded-md w-1/3 placeholder:pl-1.5 text-xs h-6"
@@ -91,8 +91,9 @@
           <p>Kho:</p>
           <select
             id="depot"
-            v-model="obj.depot"
+            v-model="objEdit.depotId"
             :disabled="isEdit"
+            @change="chooseWarehouse"
             class="border border-gray-400 rounded-md w-20 placeholder:pl-1.5 text-xs h-6 ml-1"
           >
             <option selected>Kho</option>
@@ -256,7 +257,7 @@
   </div>
 </template>
 <script setup>
-import { ref, computed, onMounted, watch, reactive } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import Table from "../components/tableOrder.vue";
 import { useRouter } from "vue-router";
 import { formatDay, formatCurrency, numberOnly } from "@/common/convert";
@@ -302,7 +303,6 @@ const props = defineProps({
   isEdit: Boolean,
 });
 let objEdit = ref({});
-const obj = reactive({ district: "", depot: "" });
 
 onMounted(async () => {
   cities.value = await createSelect("shipping/location", "province");
@@ -315,45 +315,8 @@ onMounted(async () => {
     };
   });
   objEdit.value.deliveryDate = formatDay(moment(), "YYYY-MM-DD");
+  setupData()
 });
-
-watch(
-  () => obj.depot,
-  (value) => {
-    products.value = products.value.map((e) => {
-      return {
-        ...e,
-        remain: e.inventory?.depots?.[value]?.available || 0,
-      };
-    });
-    objEdit.value.depotId = value;
-  }
-);
-
-watch(
-  () => obj.district,
-  async (value) => {
-    objEdit.value.customerDistrictId = value;
-    const objShip = {
-      fromCityName: "Hà Nội",
-      fromDistrictName: "Quận Ba Đình",
-      toCityName: findAddress(cities.value, objEdit.value.customerCityId),
-      toDistrictName: findAddress(districts.value, value),
-      shippingWeight: objEdit.value.shippingWeight || 1,
-    };
-    const temp = structuredClone(store.getBody);
-    temp.accessToken = sessionStorage.getItem("token");
-    const res = await HTTP("shipping/fee", temp, objShip);
-    if (res?.data?.data?.data) {
-      shipList.value = res?.data?.data?.data?.map((e) => {
-        return {
-          text: `${e.carrierName} - ${e.serviceTypeName}`,
-          value: `${e.carrierId},${e.serviceId},${e.shipFee}`,
-        };
-      });
-    }
-  }
-);
 
 const getList = async (url, type, id, notConvert) => {
   let result = [];
@@ -393,6 +356,14 @@ const chooseCity = async (setting) => {
   }
 };
 
+const chooseWarehouse = async () => {
+  products.value = products.value.map((e) => {
+    return {
+      ...e,
+      remain: e.inventory?.depots?.[value]?.available || 0,
+    };
+  });
+};
 
 const chooseDistrict = async (setting) => {
   const response = await getList(
@@ -404,19 +375,43 @@ const chooseDistrict = async (setting) => {
   if (setting) {
     objEdit.value.customerWard = "Phường xã";
   }
+  const objShip = {
+    fromCityName: "Hà Nội",
+    fromDistrictName: "Quận Ba Đình",
+    toCityName: findAddress(cities.value, objEdit.value.customerCityId),
+    toDistrictName: findAddress(
+      districts.value,
+      objEdit.value.customerDistrictId
+    ),
+    shippingWeight: objEdit.value.shippingWeight || 1,
+  };
+  const temp = structuredClone(store.getBody);
+  temp.accessToken = sessionStorage.getItem("token");
+  const res = await HTTP("shipping/fee", temp, objShip);
+  if (res?.data?.data?.data) {
+    shipList.value = res?.data?.data?.data?.map((e) => {
+      return {
+        text: `${e.carrierName} - ${e.serviceTypeName}`,
+        value: `${e.carrierId},${e.serviceId},${e.shipFee}`,
+      };
+    });
+  }
 };
-if (props.isEdit) {
-  objEdit.value = structuredClone(props.info);
-  chooseCity(false);
-  chooseDistrict(false);
-} else {
-  const profile = structuredClone(store.getProfile);
-  objEdit.value.customerName = profile.client_name || "";
-  objEdit.value.customerCityId = "Tỉnh";
-  objEdit.value.customerDistrictId = "Quận huyện";
-  objEdit.value.customerWard = "Phường xã";
-  objEdit.value.depotName = "Kho";
-}
+
+const setupData = () => {
+  if (props.isEdit) {
+    objEdit.value = structuredClone(props.info);
+    chooseCity(false);
+    chooseDistrict(false);
+  } else {
+    const profile = structuredClone(store.getProfile);
+    objEdit.value.customerName = profile.client_name || "";
+    objEdit.value.customerCityId = "Tỉnh";
+    objEdit.value.customerDistrictId = "Quận huyện";
+    objEdit.value.customerWard = "Phường xã";
+    objEdit.value.depotName = "Kho";
+  }
+};
 
 const findAddress = (arr, id) => {
   return arr.find((e) => e.value === id)?.text ?? null;
