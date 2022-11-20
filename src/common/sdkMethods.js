@@ -1,6 +1,7 @@
+import { setting } from "../common/config";
 export const initSdkApp = () => {
-  const show_log = true;
-  const secret_key = "201d836cc4bc4d58b4c2e359b90a3e63";
+  const show_log = false;
+  const secret_key = setting.secretKeyWidget;
   try {
     window.Sdk = new ChatboxSdk({ secret_key, show_log });
     Sdk.init();

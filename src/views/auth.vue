@@ -1,7 +1,7 @@
 <template>
   <router-link v-if="isLogin()" to="/orders">Danh sách đơn hàng</router-link>
   <div class="h-[100vh] flex justify-center items-center flex-col">
-    <div class="flex justify-between items-center" v-if="!isLogin()"> 
+    <div class="flex justify-between items-center" v-if="otherApp">
       <p>App ID</p>
       <input
         type="text"
@@ -12,14 +12,14 @@
         class="border border-gray-400 pl-3 h-6 rounded-md text-xs w-1/2 placeholder:pl-3 placeholder:text-xs"
       />
     </div>
-    <div class="flex justify-around items-center mt-3" v-if="!isLogin()">
+    <div class="flex justify-around items-center mt-3" v-if="otherApp">
       <p>Secret Key</p>
       <input
         v-model="secretKey"
         class="border border-gray-400 pl-3 h-6 rounded-md text-xs w-1/2 placeholder:pl-3 placeholder:text-xs"
       />
     </div>
-    <div class="flex justify-around items-center mt-3" v-if="!isLogin()">
+    <div class="flex justify-around items-center mt-3" v-if="otherApp">
       <p>Return Link</p>
       <input
         v-model="returnLink"
@@ -27,15 +27,17 @@
         class="border border-gray-400 pl-3 h-6 rounded-md text-xs w-1/2 placeholder:pl-3 placeholder:text-xs"
       />
     </div>
+    <div class="flex justify-around items-center mt-3" v-if="!isLogin()">
+      <input type="checkbox" name="vehicle1" v-model="otherApp" />
+      <label for="vehicle1" class="ml-1"> Chọn app khác</label><br />
+    </div>
 
     <button
       v-if="!isLogin()"
       class="font-bold bg-sky-600 p-2 rounded text-md text-white h-10 w-32 mt-4"
-      :class="
-        !isValidHttpUrl(returnLink) || !appId || !secretKey ? 'opacity-50' : ''
-      "
+      :class="isDisabled ? 'opacity-50' : ''"
       @click="Auth()"
-      :disabled="!isValidHttpUrl(returnLink) || !appId || !secretKey"
+      :disabled="isDisabled"
     >
       Kích hoạt
     </button>
@@ -51,8 +53,9 @@
 <script setup>
 import { saveConfig } from "../common/sdkMethods.js";
 import { useRouter } from "vue-router";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { numberOnly } from "../common/convert";
+import { setting } from "../common/config";
 
 const appId = ref("");
 const secretKey = ref("");
@@ -63,6 +66,13 @@ const numberValidate = () => {
   appId.value = numberOnly(appId.value);
 };
 
+const isDisabled = computed(() => {
+  return (
+    otherApp.value &&
+    (!isValidHttpUrl(returnLink.value) || !appId.value || !secretKey.value)
+  );
+});
+
 const router = useRouter();
 // import useEmitter from "../common/bus.js";
 // const emitter = useEmitter();
@@ -72,13 +82,16 @@ const router = useRouter();
 const Auth = () => {
   localStorage.setItem(
     "infoApp",
-    JSON.stringify({ appId: appId.value, secretKey: secretKey.value })
+    JSON.stringify({
+      appId: otherApp.value ? appId.value : setting.appId,
+      secretKey: otherApp.value ? secretKey.value : setting.secretKey,
+    })
   );
   window.addEventListener("storage", message_receive);
   window.open(
-    `https://nhanh.vn/oauth?appId=${appId.value || 73006}&returnLink=${
-      returnLink.value || "https://hihihaha.vercel.app/access"
-    }`,
+    `https://nhanh.vn/oauth?appId=${
+      otherApp.value ? appId.value : setting.appId
+    }&returnLink=${otherApp.value ? returnLink.value : setting.returnLink}`,
     "chromeTab",
     "popup"
   );
