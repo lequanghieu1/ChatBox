@@ -1,5 +1,5 @@
 <template>
-  <loading v-if="!orderList.length && !noRecord" />
+  <load v-if="!orderList.length && !noRecord" />
   <div class="flex justify-around items-center">
     <div class="h-[24px] w-[24px]"></div>
     <div
@@ -52,7 +52,7 @@
 import { ref, onMounted } from "vue";
 import orderDetail from "./orderDetail.vue";
 import createOrder from "./createEditOrder.vue";
-import loading from "../components/loading.vue";
+import load from "../components/load.vue";
 import { useRouter } from "vue-router";
 import { HTTP } from "../common/api";
 import { convertObject } from "../common/convert";
@@ -68,8 +68,7 @@ const tabTwo = ref("Tạo đơn");
 const noRecord = ref(false);
 
 onMounted(async () => {
-  resetTab();
-  await getListOrder();
+  await resetTab();
 });
 
 const getListOrder = async () => {
@@ -106,10 +105,11 @@ const gotoAuth = () => {
   });
 };
 
-const resetTab = () => {
+const resetTab = async() => {
   tabIndex.value = 1;
   router.push({ path: "/orders", query: {} });
   tabTwo.value = "Tạo đơn";
   isEdit.value = false;
+  await getListOrder();
 };
 </script>

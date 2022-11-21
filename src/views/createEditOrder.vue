@@ -1,4 +1,5 @@
 <template>
+  <load v-if="loading" />
   <div
     class="w-screen p-1 text-sm text-white fixed z-10 translate-y-[-57px]"
     v-if="alert || success"
@@ -122,7 +123,7 @@
           v-model="objEdit.privateDescription"
         />
       </div>
-      <div class="flex justify-between mt-2">
+      <!-- <div class="flex justify-between mt-2">
         <div class="w-44 flex justify-start items-center">
           <img src="../assets/icons/tag.svg" />
           <p class="text-xs leading-4 font-normal ml-1.5">Thẻ đơn hàng</p>
@@ -132,8 +133,8 @@
         >
           <p class="text-xs text-violet-800 font-medium">Thêm thẻ</p>
         </div>
-      </div>
-      <div class="flex justify-between mt-2">
+      </div> -->
+      <!-- <div class="flex justify-between mt-2">
         <div class="w-44 flex justify-start items-center">
           <img src="../assets/icons/tag.svg" />
           <p class="text-xs leading-4 font-normal ml-1.5">Thẻ khách hàng</p>
@@ -143,7 +144,7 @@
         >
           <p class="text-xs text-violet-800 font-medium">Thêm thẻ</p>
         </div>
-      </div>
+      </div> -->
       <div class="border-dashed border border-gray-400 mt-2"></div>
       <div class="flex justify-between mt-2">
         <div class="text-xs">Tổng tiền chi tiêu của khách</div>
@@ -264,6 +265,7 @@ import { formatDay, formatCurrency, numberOnly } from "@/common/convert";
 import { convertObject } from "../common/convert";
 import { HTTP } from "../common/api";
 import { useFormBody } from "../store/store";
+import load from "../components/load.vue";
 import moment from "moment";
 
 const router = useRouter();
@@ -298,6 +300,7 @@ const statusList = [
 let alert = ref("");
 let success = ref("");
 let message = ref("");
+let loading = ref(false);
 const props = defineProps({
   info: Object,
   isEdit: Boolean,
@@ -305,6 +308,7 @@ const props = defineProps({
 let objEdit = ref({});
 
 onMounted(async () => {
+  loading.value = true;
   cities.value = await createSelect("shipping/location", "province");
   warehouses.value = await createSelect("store/depot", "warehouse");
   products.value = await createSelect("product/search", "product", true);
@@ -315,10 +319,12 @@ onMounted(async () => {
     };
   });
   objEdit.value.deliveryDate = formatDay(moment(), "YYYY-MM-DD");
-  setupData()
+  setupData();
+  loading.value = false;
 });
 
 const getList = async (url, type, id, notConvert) => {
+  loading.value = true;
   let result = [];
   let data = {};
   const temp = structuredClone(store.getBody);
@@ -328,6 +334,7 @@ const getList = async (url, type, id, notConvert) => {
     data = { type, parentId: id };
   }
   const response = await HTTP(url, temp, data);
+  loading.value = false;
   if (!Array.isArray(response.data?.data?.data) && !notConvert) {
     result = convertObject(response.data?.data?.data) || [];
   } else if (!Array.isArray(response.data?.data?.data) && notConvert) {
@@ -406,6 +413,7 @@ const setupData = () => {
   } else {
     const profile = structuredClone(store.getProfile);
     objEdit.value.customerName = profile.client_name || "";
+    objEdit.value.customerMobile = profile.phone || "";
     objEdit.value.customerCityId = "Tỉnh";
     objEdit.value.customerDistrictId = "Quận huyện";
     objEdit.value.customerWard = "Phường xã";
@@ -464,11 +472,13 @@ const closeAlert = (time) => {
       success.value = "";
       return;
     }
+    loading.value = false;
     emit("afterUpdate");
   }, time ?? 5000);
 };
 
 const createOrder = async () => {
+  loading.value = true;
   const id = (Math.random() * 1000000).toString().split(".")[0];
   objEdit.value.customerCityName = findAddress(
     cities.value,
@@ -487,7 +497,7 @@ const createOrder = async () => {
   if (res.data.data.code) {
     success.value = `Thêm`;
     message.value = "Vui lòng đợi hệ thống";
-    closeAlert(6000);
+    closeAlert(2000);
   } else {
     alert.value = Object.values(res.data.data.messages)[0];
     closeAlert();
@@ -505,6 +515,7 @@ const numberValidate = () => {
 };
 
 const editOrder = async () => {
+  loading.value = true;
   const temp = structuredClone(store.getBody);
   temp.accessToken = sessionStorage.getItem("token");
   delete temp.data;
@@ -518,7 +529,7 @@ const editOrder = async () => {
   if (res.data.data.code) {
     success.value = `Cập nhật`;
     message.value = "Vui lòng đợi hệ thống";
-    await closeAlert(6000);
+    await closeAlert(2000);
   } else {
     alert.value = Object.values(res.data.data.messages)[0];
     closeAlert();

@@ -1,12 +1,12 @@
 <template>
-  <loading />
+  <load />
 </template>
 <script setup>
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { initSdkApp } from "../common/sdkMethods.js";
 import { useFormBody } from "../store/store";
-import loading from "../components/loading.vue";
+import load from "../components/load.vue";
 const router = useRouter();
 const store = useFormBody();
 const check = ref(false);
@@ -18,7 +18,7 @@ onMounted(async () => {
     check.value = true;
   }
   await initSdkApp();
-  await getProfile()
+  await getProfile();
   await getConfig();
 });
 
@@ -44,7 +44,10 @@ const getConfig = () => {
 
 const getProfile = () => {
   Sdk.getCustomerInfo((e, r) => {
-    store.saveProfile(r.data.public_profile);
+    store.saveProfile({
+      ...r.data.public_profile,
+      phone: r.data.conversation_contact?.client_phone || "",
+    });
   });
 };
 </script>
