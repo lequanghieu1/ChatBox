@@ -1,5 +1,5 @@
 <template>
-    <div class="w-full fixed h-screen flex justify-center items-center z-10 opacity-50">
+    <div class="w-full bg-gray-300 fixed h-screen flex justify-center items-center z-10 opacity-60">
         <div class="loader"></div>
     </div>
 </template>

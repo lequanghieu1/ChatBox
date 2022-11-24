@@ -1,5 +1,4 @@
 <template>
-  <load v-if="loading" />
   <div
     class="w-screen p-1 text-sm text-white fixed z-10 translate-y-[-57px]"
     v-if="alert || success"
@@ -184,14 +183,14 @@
           max="2023-12-31"
         />
       </div>
-      <div class="flex justify-between mt-2" v-if="isEdit">
+      <div class="flex justify-between mt-2">
         <div class="w-28 text-xs">Trạng thái</div>
         <div class="flex justify-start items-center">
           <option selected></option>
           <select
             id="status"
             @change="chooseCarrier"
-            v-model="objEdit.status"
+            v-model="objEdit.statusCode"
             class="border border-gray-400 rounded-md w-32 placeholder:pl-1.5 text-xs h-6 ml-1"
           >
             <template v-for="status in statusList" :key="status.value">
@@ -265,50 +264,33 @@ import { formatDay, formatCurrency, numberOnly } from "@/common/convert";
 import { convertObject } from "../common/convert";
 import { HTTP } from "../common/api";
 import { useFormBody } from "../store/store";
-import load from "../components/load.vue";
+import { statusLists } from "../common/helper";
 import moment from "moment";
 
 const router = useRouter();
 const store = useFormBody();
 
-const emit = defineEmits(["afterUpdate"]);
+const emit = defineEmits(["afterUpdate", "status"]);
 let cities = ref([]);
 let districts = ref([]);
 let wards = ref([]);
 let warehouses = ref([]);
 let products = ref([]);
 let shipList = ref([]);
-const statusList = [
-  { text: "Đơn mới", value: "New" },
-  { text: "Đang xác nhận", value: "Confirming" },
-  { text: "Chờ khách xác nhận", value: "CustomerConfirming" },
-  { text: "Đã xác nhận", value: "Confirmed" },
-  { text: "Đang đóng gói", value: "Packing" },
-  { text: "Đã đóng gói", value: "Packed" },
-  { text: "Đổi kho xuất hàng", value: "ChangeDepot" },
-  { text: "Chờ thu gom", value: "Pickup" },
-  { text: "Đang giao hàng", value: "Shipping" },
-  { text: "Thành công", value: "Success" },
-  { text: "Thất bại", value: "Failed" },
-  { text: "Khách hủy", value: "Canceled" },
-  { text: "Hệ thống hủy", value: "Aborted" },
-  { text: "Hãng vận chuyển hủy đơn", value: "CarrierCanceled" },
-  { text: "Hết hàng", value: "SoldOut" },
-  { text: "Đang chuyển hoàn", value: "Returning" },
-  { text: "Đã chuyển hoàn", value: "Returned" },
-];
+const statusList = ref([])
 let alert = ref("");
 let success = ref("");
 let message = ref("");
-let loading = ref(false);
+
 const props = defineProps({
   info: Object,
   isEdit: Boolean,
+  loading: Boolean,
 });
 let objEdit = ref({});
 
 onMounted(async () => {
-  loading.value = true;
+  emit("status", true);
   cities.value = await createSelect("shipping/location", "province");
   warehouses.value = await createSelect("store/depot", "warehouse");
   products.value = await createSelect("product/search", "product", true);
@@ -320,11 +302,11 @@ onMounted(async () => {
   });
   objEdit.value.deliveryDate = formatDay(moment(), "YYYY-MM-DD");
   setupData();
-  loading.value = false;
+  emit("status", false);
 });
 
 const getList = async (url, type, id, notConvert) => {
-  loading.value = true;
+  emit("status", true);
   let result = [];
   let data = {};
   const temp = structuredClone(store.getBody);
@@ -334,7 +316,7 @@ const getList = async (url, type, id, notConvert) => {
     data = { type, parentId: id };
   }
   const response = await HTTP(url, temp, data);
-  loading.value = false;
+  emit("status", false);
   if (!Array.isArray(response.data?.data?.data) && !notConvert) {
     result = convertObject(response.data?.data?.data) || [];
   } else if (!Array.isArray(response.data?.data?.data) && notConvert) {
@@ -418,6 +400,9 @@ const setupData = () => {
     objEdit.value.customerDistrictId = "Quận huyện";
     objEdit.value.customerWard = "Phường xã";
     objEdit.value.depotName = "Kho";
+    statusList.value = statusLists.filter((e) =>
+      ["New", "Confirmed"].includes(e.value)
+    );
   }
 };
 
@@ -472,13 +457,13 @@ const closeAlert = (time) => {
       success.value = "";
       return;
     }
-    loading.value = false;
+    emit("status", false);
     emit("afterUpdate");
   }, time ?? 5000);
 };
 
 const createOrder = async () => {
-  loading.value = true;
+  emit("status", true);
   const id = (Math.random() * 1000000).toString().split(".")[0];
   objEdit.value.customerCityName = findAddress(
     cities.value,
@@ -490,6 +475,7 @@ const createOrder = async () => {
   );
   objEdit.value.id = id;
   objEdit.value.productList = objEdit.value.products;
+  objEdit.value.status = objEdit.value.statusCode;
   const temp = structuredClone(store.getBody);
   temp.accessToken = sessionStorage.getItem("token");
   delete temp.data;
@@ -500,6 +486,7 @@ const createOrder = async () => {
     closeAlert(2000);
   } else {
     alert.value = Object.values(res.data.data.messages)[0];
+    emit("status", false);
     closeAlert();
   }
 };
@@ -515,16 +502,16 @@ const numberValidate = () => {
 };
 
 const editOrder = async () => {
-  loading.value = true;
+  emit("status", true);
   const temp = structuredClone(store.getBody);
   temp.accessToken = sessionStorage.getItem("token");
   delete temp.data;
-  const { description, privateDescription, id, status } = objEdit.value;
+  const { description, privateDescription, id, statusCode } = objEdit.value;
   const res = await HTTP("order/update", temp, {
     description,
     privateDescription,
     orderId: id,
-    status,
+    status: statusCode,
   });
   if (res.data.data.code) {
     success.value = `Cập nhật`;
@@ -532,6 +519,7 @@ const editOrder = async () => {
     await closeAlert(2000);
   } else {
     alert.value = Object.values(res.data.data.messages)[0];
+    emit("status", false);
     closeAlert();
   }
 };

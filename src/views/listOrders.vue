@@ -1,5 +1,5 @@
 <template>
-  <load v-if="!orderList.length && !noRecord" />
+  <load v-if="(!orderList.length && !noRecord) || loading" />
   <div class="flex justify-around items-center">
     <div class="h-[24px] w-[24px]"></div>
     <div
@@ -26,6 +26,20 @@
     </div>
     <img src="../assets/icons/setting.svg" @click="gotoAuth" />
   </div>
+  <div class="flex justify-center items-center h-screen w-full h-[20px] mt-4">
+    <input
+      class="border border-gray-400 pl-3 h-5 rounded-md text-xs w-3/5 placeholder:pl-3 placeholder:text-xs"
+      placeholder="Tìm kiếm SĐT"
+      v-model="phone"
+    />
+    <p
+      class="text-xs text-violet-800 font-medium cursor-pointer ml-3"
+      @click="getListOrder(true)"
+    >
+      Tìm kiếm
+    </p>
+  </div>
+
   <div v-if="noRecord" class="flex justify-center items-center h-screen">
     <p>chưa có đơn hàng nào</p>
   </div>
@@ -42,11 +56,21 @@
   <div class="mt-2" v-if="tabIndex === 2">
     <createOrder
       :info="objEdit"
+      :loading="loading"
+      @status="updateStatus"
       class="mt-2"
       :isEdit="isEdit"
       @afterUpdate="resetTab"
     />
   </div>
+
+  <button
+    v-if="tabIndex === 1"
+    class="bg-blue-500 w-full rounded-md h-8 text-white text-base mt-2"
+    @click="getListOrder(1)"
+  >
+    Xem thêm
+  </button>
 </template>
 <script setup>
 import { ref, onMounted } from "vue";
@@ -66,15 +90,27 @@ const router = useRouter();
 let tabIndex = ref(1);
 const tabTwo = ref("Tạo đơn");
 const noRecord = ref(false);
+let timeCall = ref(2);
+let loading = ref(false);
+const profile = structuredClone(store.getProfile);
+let phone = ref(profile.phone);
 
 onMounted(async () => {
   await resetTab();
 });
 
-const getListOrder = async () => {
+const getListOrder = async (val) => {
   const obj = { ...store.data };
+  let phoneObj = null;
+  if (Number.isInteger(val)) {
+    phoneObj = { page: timeCall.value };
+    timeCall.value++;
+  }
+  if (val === true) {
+    phoneObj = { customerMobile: phone.value };
+  }
   obj.accessToken = sessionStorage.getItem("token");
-  const response = await HTTP(`order/index`, obj, null);
+  const response = await HTTP(`order/index`, obj, phoneObj);
   orderList.value = convertObject(response.data?.data?.data?.orders || {}).map(
     (e) => {
       return { ...e, isOpen: false };
@@ -92,6 +128,11 @@ const editOrder = (orderId) => {
   isEdit.value = true;
 };
 
+const updateStatus = (value) => {
+  console.log(value);
+  loading.value = value || false;
+};
+
 const openOrder = (index) => {
   orderList.value[index].isOpen = !orderList.value[index].isOpen;
 };
@@ -105,7 +146,7 @@ const gotoAuth = () => {
   });
 };
 
-const resetTab = async() => {
+const resetTab = async () => {
   tabIndex.value = 1;
   router.push({ path: "/orders", query: {} });
   tabTwo.value = "Tạo đơn";

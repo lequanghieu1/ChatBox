@@ -1,6 +1,6 @@
 <template>
   <div
-    class="w-full rounded-md"
+    class="w-full rounded-md cursor-pointer"
     :class="
       order.isOpen
         ? 'h-[315px] border-4 border-indigo-600'
@@ -10,21 +10,40 @@
   >
     <div class="mt-3 ml-2 mr-2">
       <div class="flex justify-between">
-        <div class="w-32 flex justify-between">
-          <p class="text-sm text-yellow-500 font-medium">{{ order.id }}</p>
-          <img class="cursor-pointer" src="../assets/icons/chat.svg" />
+        <div
+          v-if="noteTooltip"
+          class="fixed w-24 h-[18px] bg-gray-800 rounded-md translate-x-[55px] translate-y-[-18px]"
+        >
+          <p class="text-white text-xs font-medium py-[1px] text-center">
+            {{ noteTooltip }}
+          </p>
+        </div>
+        <div class="w-40 flex justify-between">
+          <p class="text-sm text-green-600 font-medium">{{ order.id }}</p>
           <img
-            class="cursor-pointer"
-            src="../assets/icons/share.svg"
-            @click.stop.prevent="gotoNhanh"
+            class="cursor-pointer mr-1"
+            @mousemove="noteTooltip = 'Nhắn tin'"
+            @mouseout="noteTooltip = ''"
+            src="../assets/icons/chat.svg"
           />
+          <div>
+            <img
+              class="cursor-pointer mr-1"
+              @mousemove="noteTooltip = 'Xem đơn(nhanh.vn)'"
+              @mouseout="noteTooltip = ''"
+              src="../assets/icons/share.svg"
+              @click.stop.prevent="gotoNhanh"
+            />
+          </div>
           <img
             class="cursor-pointer"
+            @mousemove="noteTooltip = 'Sửa đơn'"
+            @mouseout="noteTooltip = ''"
             src="../assets/icons/order.svg"
             @click="$emit('editOrder', order.id)"
           />
         </div>
-        <p class="text-sm text-yellow-500 font-medium">
+        <p class="text-sm text-green-600 font-medium">
           {{ formatCurrency(totalFee) }}
         </p>
       </div>
@@ -39,7 +58,6 @@
           }}
         </p>
         <div
-          v-if="order.createdByName"
           class="w-24 h-[18px] bg-gray-800 rounded-md translate-y-[80px]"
           :class="tooltip ? 'opacity-100' : 'opacity-0'"
         >
@@ -93,7 +111,7 @@
             Tạo lúc: {{ formatDay(order.createdDateTime, "hh:mm - DD/MM") }}
           </p>
         </div>
-        <div class="flex w-1/2 justify-end">
+        <div v-if="order.createdByName" class="flex w-1/2 justify-end">
           <p class="text-black text-xs">Người tạo:</p>
           <img
             @mousemove="tooltip = true"
@@ -174,7 +192,8 @@
 import { ref, computed } from "vue";
 import { formatDay, formatCurrency } from "@/common/convert";
 import moment from "moment";
-const tooltip = ref(false);
+let tooltip = ref(false);
+let noteTooltip = ref("");
 const props = defineProps({
   order: Object,
   index: Number,

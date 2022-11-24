@@ -1,5 +1,11 @@
 <template>
-  <router-link v-if="isLogin()" to="/orders">Danh sách đơn hàng</router-link>
+  <button
+    v-if="isLogin()"
+    class="bg-indigo-600 w-full rounded-md h-8 text-white text-base mt-2"
+  >
+    <router-link v-if="isLogin()" to="/orders">Danh sách đơn hàng</router-link>
+  </button>
+
   <div class="h-[100vh] flex justify-center items-center flex-col">
     <div class="flex justify-between items-center" v-if="otherApp">
       <p>App ID</p>
@@ -110,7 +116,6 @@ const message_receive = (e) => {
 };
 const Logout = () => {
   sessionStorage.clear();
-  location.reload();
   saveConfig(null);
 };
 
