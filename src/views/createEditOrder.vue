@@ -482,7 +482,6 @@ const createOrder = async () => {
   const temp = structuredClone(store.getBody);
   temp.accessToken = sessionStorage.getItem("token");
   delete temp.data;
-  console.log(totalFee,'reate')
   const res = await HTTP("order/add", temp, structuredClone(objEdit.value),totalFee.value);
   if (res.data.data.code) {
     success.value = `Thêm`;
