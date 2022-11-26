@@ -1,6 +1,6 @@
 <template>
   <div class="flex justify-center items-center">
-    <div class="w-screen bg-[#F8FAFC] h-screen">
+    <div class="w-screen bg-[#F8FAFC] h-full">
       <router-view />
     </div>
   </div>

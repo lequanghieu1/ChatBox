@@ -134,7 +134,6 @@ const editOrder = (orderId) => {
 };
 
 const updateStatus = (value) => {
-  console.log(value);
   loading.value = value || false;
 };
 

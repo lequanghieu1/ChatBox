@@ -392,6 +392,7 @@ const setupData = () => {
     objEdit.value = structuredClone(props.info);
     chooseCity(false);
     chooseDistrict(false);
+    statusList.value = statusLists
   } else {
     const profile = structuredClone(store.getProfile);
     objEdit.value.customerName = profile.client_name || "";
