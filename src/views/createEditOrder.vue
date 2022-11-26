@@ -392,7 +392,9 @@ const setupData = () => {
     objEdit.value = structuredClone(props.info);
     chooseCity(false);
     chooseDistrict(false);
-    statusList.value = statusLists
+    statusList.value = statusListsfilter((e) =>
+      ["Success", "Confirmed","Canceled","Aborted"].includes(e.value)
+    );
   } else {
     const profile = structuredClone(store.getProfile);
     objEdit.value.customerName = profile.client_name || "";
