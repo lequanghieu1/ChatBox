@@ -345,7 +345,7 @@ const chooseCity = async (setting) => {
   }
 };
 
-const chooseWarehouse = async () => {
+const chooseWarehouse = async (value) => {
   products.value = products.value.map((e) => {
     return {
       ...e,
@@ -392,7 +392,7 @@ const setupData = () => {
     objEdit.value = structuredClone(props.info);
     chooseCity(false);
     chooseDistrict(false);
-    statusList.value = statusListsfilter((e) =>
+    statusList.value = statusLists.filter((e) =>
       ["Success", "Confirmed","Canceled","Aborted"].includes(e.value)
     );
   } else {
@@ -482,7 +482,8 @@ const createOrder = async () => {
   const temp = structuredClone(store.getBody);
   temp.accessToken = sessionStorage.getItem("token");
   delete temp.data;
-  const res = await HTTP("order/add", temp, structuredClone(objEdit.value));
+  console.log(totalFee,'reate')
+  const res = await HTTP("order/add", temp, structuredClone(objEdit.value),totalFee.value);
   if (res.data.data.code) {
     success.value = `Thêm`;
     message.value = "Vui lòng đợi hệ thống";
