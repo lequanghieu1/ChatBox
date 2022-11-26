@@ -26,7 +26,10 @@
     </div>
     <img src="../assets/icons/setting.svg" @click="gotoAuth" />
   </div>
-  <div class="flex justify-center items-center h-screen w-full h-[20px] mt-4">
+  <div
+    class="flex justify-center items-center h-screen w-full h-[20px] mt-4"
+    v-if="tabIndex === 1"
+  >
     <input
       class="border border-gray-400 pl-3 h-5 rounded-md text-xs w-3/5 placeholder:pl-3 placeholder:text-xs"
       placeholder="Tìm kiếm SĐT"
@@ -65,7 +68,7 @@
   </div>
 
   <button
-    v-if="tabIndex === 1"
+    v-if="tabIndex === 1 && totalPage !== 1"
     class="bg-blue-500 w-full rounded-md h-8 text-white text-base mt-2"
     @click="getListOrder(1)"
   >
@@ -89,11 +92,12 @@ let objEdit = ref([]);
 const router = useRouter();
 let tabIndex = ref(1);
 const tabTwo = ref("Tạo đơn");
-const noRecord = ref(false);
+const noRecord = ref(null);
 let timeCall = ref(2);
 let loading = ref(false);
 const profile = structuredClone(store.getProfile);
 let phone = ref(profile.phone);
+let totalPage = ref(1);
 
 onMounted(async () => {
   await resetTab();
@@ -111,14 +115,13 @@ const getListOrder = async (val) => {
   }
   obj.accessToken = sessionStorage.getItem("token");
   const response = await HTTP(`order/index`, obj, phoneObj);
+  totalPage.value = response.data?.data?.data?.totalPages || 1;
   orderList.value = convertObject(response.data?.data?.data?.orders || {}).map(
     (e) => {
       return { ...e, isOpen: false };
     }
   );
-  if (!orderList.value.length) {
-    noRecord.value = true;
-  }
+  noRecord.value = !orderList.value.length;
 };
 const editOrder = (orderId) => {
   router.push({ path: "/orders", query: { orderId } });
