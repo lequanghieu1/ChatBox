@@ -1,5 +1,6 @@
 import axios from "axios";
 
+
 export const HTTP = async (uri, obj, data) => {
   let version = {};
   const post_data = { ...obj };
@@ -16,6 +17,10 @@ export const HTTP = async (uri, obj, data) => {
         ? `https://open.nhanh.vn/api/${uri}`
         : "https://nhanh.vn/oauth/access_token",
       post_data: { ...post_data, ...version },
+    },{
+      headers: {
+        Authorization: Sdk.access_token
+      }
     }
   );
 };

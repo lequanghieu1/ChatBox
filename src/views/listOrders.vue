@@ -104,6 +104,7 @@ onMounted(async () => {
 });
 
 const getListOrder = async (val) => {
+  loading.value = true
   const obj = { ...store.data };
   let phoneObj = null;
   if (Number.isInteger(val)) {
@@ -122,6 +123,7 @@ const getListOrder = async (val) => {
     }
   );
   noRecord.value = !orderList.value.length;
+  loading.value = false
 };
 const editOrder = (orderId) => {
   router.push({ path: "/orders", query: { orderId } });
