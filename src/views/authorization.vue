@@ -33,6 +33,7 @@ const getConfig = () => {
         sessionStorage.setItem("token", r?.data?.config_data?.token);
         if (!check.value) {
           store.saveForm(r.data.config_data);
+          localStorage.setItem("infoApp",r.data.config_data)
         }
         router.push("/orders");
       } else {
