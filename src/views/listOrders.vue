@@ -43,7 +43,7 @@
     </p>
   </div>
 
-  <div v-if="noRecord" class="flex justify-center items-center h-screen">
+  <div v-if="noRecord&&tabIndex===1" class="flex justify-center items-center h-screen">
     <p>chưa có đơn hàng nào</p>
   </div>
   <div class="mt-2" v-if="tabIndex === 1">
