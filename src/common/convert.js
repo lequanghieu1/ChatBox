@@ -1,6 +1,6 @@
 import moment from "moment";
 export const convertObject = object => {
-  return Object.entries(object).map(([key, value]) => {
+  return Object.entries(object || {}).map(([key, value]) => {
     return value;
   });
 };
