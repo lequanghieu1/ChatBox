@@ -1,7 +1,7 @@
 <template>
   <load v-if="(!orderList.length && !noRecord) || loading" />
   <div class="flex justify-around items-center">
-    <div class="h-[24px] w-[24px]"></div>
+    <div class="h-[24px] w-[24px]" v-if="admin"></div>
     <div
       class="w-3/5 h-[34px] bg-[#E3E8EF] rounded-lg mt-[5px] flex items-center justify-around"
     >
@@ -24,14 +24,19 @@
         {{ tabTwo }}
       </button>
     </div>
-    <img src="../assets/icons/setting.svg" @click="gotoAuth" />
+    <img
+      v-if="admin"
+      class="cursor-pointer"
+      src="../assets/icons/setting.svg"
+      @click="gotoAuth"
+    />
   </div>
   <div
     class="flex justify-center items-center h-screen w-full h-[20px] mt-4"
     v-if="tabIndex === 1"
   >
     <input
-      class="border border-gray-400 pl-3 h-5 rounded-md text-xs w-3/5 placeholder:pl-3 placeholder:text-xs"
+      class="border border-gray-400 pl-3 h-5 rounded-md text-xs w-4/5 placeholder:pl-3 placeholder:text-xs"
       placeholder="Tìm kiếm SĐT"
       v-model="phone"
     />
@@ -43,7 +48,10 @@
     </p>
   </div>
 
-  <div v-if="noRecord" class="flex justify-center items-center h-screen">
+  <div
+    v-if="noRecord && tabIndex === 1"
+    class="flex justify-center items-center h-screen"
+  >
     <p>chưa có đơn hàng nào</p>
   </div>
   <div class="mt-2" v-if="tabIndex === 1">
@@ -76,7 +84,7 @@
   </button>
 </template>
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import orderDetail from "./orderDetail.vue";
 import createOrder from "./createEditOrder.vue";
 import load from "../components/load.vue";
@@ -103,8 +111,11 @@ onMounted(async () => {
   await resetTab();
 });
 
+const admin = computed(() => {
+  return Sdk?.is_page_admin || false;
+});
 const getListOrder = async (val) => {
-  loading.value = true
+  loading.value = true;
   const obj = { ...store.data };
   let phoneObj = null;
   if (Number.isInteger(val)) {
@@ -123,7 +134,7 @@ const getListOrder = async (val) => {
     }
   );
   noRecord.value = !orderList.value.length;
-  loading.value = false
+  loading.value = false;
 };
 const editOrder = (orderId) => {
   router.push({ path: "/orders", query: { orderId } });

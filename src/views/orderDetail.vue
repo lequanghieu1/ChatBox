@@ -18,32 +18,31 @@
             {{ noteTooltip }}
           </p>
         </div>
-        <div class="w-40 flex justify-between">
-          <p class="text-sm text-green-600 font-medium">{{ order.id }}</p>
+        <div class="w-40 flex justify-between items-center" >
+          <p class="text-sm font-medium" :class="color(order.statusCode)">
+            {{ order.id }}
+          </p>
           <img
             class="cursor-pointer mr-1"
-            @mousemove="noteTooltip = 'Nhắn tin'"
-            @mouseout="noteTooltip = ''"
+            @mouseover="noteTooltip = 'Nhắn tin'"
+            @mouseleave="noteTooltip = ''"
             src="../assets/icons/chat.svg"
           />
-          <div>
-            <img
-              class="cursor-pointer mr-1"
-              @mousemove="noteTooltip = 'Xem đơn(nhanh.vn)'"
-              @mouseout="noteTooltip = ''"
-              src="../assets/icons/share.svg"
-              @click.stop.prevent="gotoNhanh"
-            />
-          </div>
+          <div
+            class="cursor-pointer mr-1 bg-[url('../assets/icons/share.svg')] w-4 h-4"
+            @mouseover="noteTooltip = 'Xem đơn(nhanh.vn)'"
+            @mouseleave="noteTooltip = ''"
+            @click.stop.prevent="gotoNhanh"
+          ></div>
           <img
             class="cursor-pointer"
-            @mousemove="noteTooltip = 'Sửa đơn'"
-            @mouseout="noteTooltip = ''"
+            @mouseover="noteTooltip = 'Sửa đơn'"
+            @mouseleave="noteTooltip = ''"
             src="../assets/icons/order.svg"
             @click="$emit('editOrder', order.id)"
           />
         </div>
-        <p class="text-sm text-green-600 font-medium">
+        <p class="text-sm font-medium" :class="color(order.statusCode)">
           {{ formatCurrency(totalFee) }}
         </p>
       </div>
@@ -203,6 +202,13 @@ const totalFee = computed(() => {
   const productFee = props.order?.calcTotalMoney || 0;
   return shipFee + productFee;
 });
+
+const color = (value) => {
+  if (value === "Success") return "text-green-600";
+  else if (value === "Confirmed") return "text-yellow-600";
+  else if (["Canceled", "Aborted"].includes(value)) return "text-red-600";
+  return "text-black";
+};
 
 const gotoNhanh = () => {
   window.open("https://nhanh.vn/order/manage/index");
