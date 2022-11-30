@@ -32,10 +32,14 @@ const getConfig = () => {
       if (r?.data?.config_data?.token) {
         sessionStorage.setItem("token", r?.data?.config_data?.token);
         store.saveForm(r.data.config_data);
-        localStorage.setItem("infoApp", JSON.stringify(r.data.config_data))
+        localStorage.setItem("infoApp", JSON.stringify(r.data.config_data));
         router.push("/orders");
       } else {
-        router.push("/getToken");
+        if (Sdk?.is_page_admin) {
+          router.push("/getToken");
+        }else{
+          router.push("/404");
+        }
       }
     }
   );

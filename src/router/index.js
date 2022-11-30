@@ -27,6 +27,11 @@ const routes = [
     name: "Access",
     component: () => import('../views/access.vue'),
   },
+  {
+    path: "/404",
+    name: "NotFound",
+    component: () => import('../views/404.vue'),
+  },
 ];
 
 const router = createRouter({

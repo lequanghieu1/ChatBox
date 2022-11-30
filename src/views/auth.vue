@@ -117,6 +117,7 @@ const message_receive = (e) => {
 const Logout = () => {
   sessionStorage.clear();
   saveConfig(null);
+  router.push("/auth");
 };
 
 const isValidHttpUrl = (string) => {

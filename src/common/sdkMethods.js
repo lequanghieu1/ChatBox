@@ -1,9 +1,8 @@
 import { setting } from "../common/config";
 export const initSdkApp = () => {
-  const show_log = false;
-  const secret_key = setting.secretKeyWidget;
+  const { secretKeyWidget, show_log } = setting;
   try {
-    window.Sdk = new ChatboxSdk({ secret_key, show_log });
+    window.Sdk = new ChatboxSdk({ secret_key: secretKeyWidget, show_log });
     Sdk.init();
   } catch (error) {
     console.log(error);
