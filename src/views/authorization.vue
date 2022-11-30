@@ -31,9 +31,8 @@ const getConfig = () => {
     async (e, r) => {
       if (r?.data?.config_data?.token) {
         sessionStorage.setItem("token", r?.data?.config_data?.token);
-        if (!check.value) {
-          store.saveForm(r.data.config_data);
-        }
+        store.saveForm(r.data.config_data);
+        localStorage.setItem("infoApp", JSON.stringify(r.data.config_data))
         router.push("/orders");
       } else {
         router.push("/getToken");
