@@ -18,7 +18,7 @@
             {{ noteTooltip }}
           </p>
         </div>
-        <div class="w-40 flex justify-between items-center" >
+        <div class="w-44 flex justify-between items-center">
           <p class="text-sm font-medium" :class="color(order.statusCode)">
             {{ order.id }}
           </p>
@@ -28,12 +28,6 @@
             @mouseleave="noteTooltip = ''"
             src="../assets/icons/chat.svg"
           />
-          <div
-            class="cursor-pointer mr-1 bg-[url('../assets/icons/share.svg')] w-4 h-4"
-            @mouseover="noteTooltip = 'Xem đơn(nhanh.vn)'"
-            @mouseleave="noteTooltip = ''"
-            @click.stop.prevent="gotoNhanh"
-          ></div>
           <img
             class="cursor-pointer"
             @mouseover="noteTooltip = 'Sửa đơn'"
@@ -41,6 +35,12 @@
             src="../assets/icons/order.svg"
             @click="$emit('editOrder', order.id)"
           />
+          <div
+            class="cursor-pointer mr-1 bg-[url('../assets/icons/share.svg')] w-4 h-4"
+            @mouseover="noteTooltip = 'Xem đơn(nhanh.vn)'"
+            @mouseleave="noteTooltip = ''"
+            @click.stop.prevent="gotoNhanh"
+          ></div>
         </div>
         <p class="text-sm font-medium" :class="color(order.statusCode)">
           {{ formatCurrency(totalFee) }}
@@ -188,7 +188,7 @@
   </div>
 </template>
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { formatDay, formatCurrency } from "@/common/convert";
 import moment from "moment";
 let tooltip = ref(false);
@@ -202,6 +202,12 @@ const totalFee = computed(() => {
   const productFee = props.order?.calcTotalMoney || 0;
   return shipFee + productFee;
 });
+watch(
+  () => noteTooltip.value,
+  (v) => {
+    console.log(v);
+  }
+);
 
 const color = (value) => {
   if (value === "Success") return "text-green-600";
