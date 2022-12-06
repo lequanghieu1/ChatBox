@@ -35,6 +35,7 @@ const getConfig = () => {
         localStorage.setItem("infoApp", JSON.stringify(r.data.config_data));
         router.push("/orders");
       } else {
+        console.log(Sdk.is_page_admin)
         if (Sdk?.is_page_admin) {
           router.push("/getToken");
         }else{
