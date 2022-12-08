@@ -16,22 +16,24 @@ import { saveConfig, initSdkApp } from "../common/sdkMethods.js";
 const router = useRouter();
 const route = useRoute();
 
-
 onMounted(async () => {
   if (localStorage.getItem("token-chat-box")) {
-    await router.push(`${route.fullPath}&${localStorage.getItem("token-chat-box")}`);
+    await router.push(
+      `${route.fullPath}&${localStorage.getItem("token-chat-box")}`
+    );
   }
   await initSdkApp();
   await getToken();
 });
 const store = useFormBody();
 const obj = { ...store.data };
-const infoApp = JSON.parse(localStorage.getItem('infoApp'))
-if(infoApp.appId){
-  obj.appId = infoApp.appId
+const key = localStorage.getItem("key");
+const infoApp = JSON.parse(localStorage.getItem("infoApp"))?.[key];
+if (infoApp?.appId) {
+  obj.appId = infoApp.appId;
 }
-if(infoApp.secretKey){
-  obj.secretKey = infoApp.secretKey
+if (infoApp.secretKey) {
+  obj.secretKey = infoApp.secretKey;
 }
 obj.accessCode = router.currentRoute.value.query.accessCode || "";
 let time = ref(5);
@@ -46,17 +48,20 @@ const note = computed(() => {
 });
 const getToken = async () => {
   const response = await HTTP(null, obj, null);
-  obj.businessId = response.data.data.businessId
-  delete obj.accessCode
-  localStorage.setItem('infoApp', JSON.stringify(obj))
-  const token = response.data.data.accessToken;
-  sessionStorage.setItem("token", token);
-  saveConfig({...obj,token});
+  obj.businessId = response.data.data.businessId;
+  delete obj.accessCode;
+  const result = JSON.parse(localStorage.getItem("infoApp")) || {};
+  const objToken = JSON.parse(localStorage.getItem("token")) || {};
+  result[key] = obj;
+  localStorage.setItem("infoApp", JSON.stringify(result));
+  objToken[key] = response.data.data.accessToken;
+  sessionStorage.setItem("token", JSON.stringify(objToken));
+  saveConfig({ ...obj, token });
 };
 watch(time, (val) => {
   if (!val) {
-    localStorage.setItem('broadcast', Math.random().toString())
-    window.close()
+    localStorage.setItem("broadcast", Math.random().toString());
+    window.close();
   }
 });
 </script>

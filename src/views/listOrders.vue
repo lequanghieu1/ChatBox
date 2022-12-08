@@ -93,6 +93,7 @@ import { HTTP } from "../common/api";
 import { convertObject } from "../common/convert";
 import { useFormBody } from "../store/store";
 
+const key = localStorage.getItem("key");
 const store = useFormBody();
 let orderList = ref([]);
 let isEdit = ref(false);
@@ -125,7 +126,7 @@ const getListOrder = async (val) => {
   if (val === true) {
     phoneObj = { customerMobile: phone.value };
   }
-  obj.accessToken = sessionStorage.getItem("token");
+  obj.accessToken = JSON.parse(sessionStorage.getItem("token"))?.[key];
   const response = await HTTP(`order/index`, obj, phoneObj);
   totalPage.value = response.data?.data?.data?.totalPages || 1;
   orderList.value = convertObject(response.data?.data?.data?.orders || {}).map(

@@ -62,10 +62,12 @@ import { useRouter } from "vue-router";
 import { ref, computed } from "vue";
 import { numberOnly } from "../common/convert";
 import { setting } from "../common/config";
+import { useFormBody } from "../store/store";
 
 const appId = ref("");
 const secretKey = ref("");
 const returnLink = ref("");
+const store = useFormBody();
 const otherApp = ref(false);
 
 const numberValidate = () => {
@@ -86,13 +88,13 @@ const router = useRouter();
 //   console.log('hihihihi')
 // });
 const Auth = () => {
-  localStorage.setItem(
-    "infoApp",
-    JSON.stringify({
-      appId: otherApp.value ? appId.value : setting.appId,
-      secretKey: otherApp.value ? secretKey.value : setting.secretKey,
-    })
-  );
+  const key = localStorage.getItem("key");
+  const infoApp = JSON.parse(sessionStorage.getItem("infoApp") || "{}");
+  infoApp[key] = {
+    appId: otherApp.value ? appId.value : setting.appId,
+    secretKey: otherApp.value ? secretKey.value : setting.secretKey,
+  };
+  localStorage.setItem("infoApp", JSON.stringify(infoApp));
   window.addEventListener("storage", message_receive);
   window.open(
     `https://nhanh.vn/oauth?appId=${
@@ -132,6 +134,7 @@ const isValidHttpUrl = (string) => {
 };
 
 const isLogin = () => {
-  return sessionStorage.getItem("token");
+  const key = localStorage.getItem("key");
+  return JSON.parse(sessionStorage.getItem("token"))?.[key];
 };
 </script>

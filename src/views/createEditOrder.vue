@@ -269,6 +269,7 @@ import moment from "moment";
 
 const router = useRouter();
 const store = useFormBody();
+const key = localStorage.getItem("key");
 
 const emit = defineEmits(["afterUpdate", "status"]);
 let cities = ref([]);
@@ -277,7 +278,7 @@ let wards = ref([]);
 let warehouses = ref([]);
 let products = ref([]);
 let shipList = ref([]);
-const statusList = ref([])
+const statusList = ref([]);
 let alert = ref("");
 let success = ref("");
 let message = ref("");
@@ -310,7 +311,7 @@ const getList = async (url, type, id, notConvert) => {
   let result = [];
   let data = {};
   const temp = structuredClone(store.getBody);
-  temp.accessToken = sessionStorage.getItem("token");
+  temp.accessToken = JSON.parse(sessionStorage.getItem("token") || {})?.[key];
   if (type && id) {
     delete temp.data;
     data = { type, parentId: id };
@@ -318,9 +319,9 @@ const getList = async (url, type, id, notConvert) => {
   const response = await HTTP(url, temp, data);
   emit("status", false);
   if (!Array.isArray(response.data?.data?.data) && !notConvert) {
-    result = convertObject(response.data?.data?.data) || [];
+    result = convertObject(response.data?.data?.data || {}) || [];
   } else if (!Array.isArray(response.data?.data?.data) && notConvert) {
-    result = convertObject(response.data?.data?.data?.products) || [];
+    result = convertObject(response.data?.data?.data?.products || {}) || [];
   } else {
     result = response.data?.data?.data || [];
   }
@@ -375,7 +376,7 @@ const chooseDistrict = async (setting) => {
     shippingWeight: objEdit.value.shippingWeight || 1,
   };
   const temp = structuredClone(store.getBody);
-  temp.accessToken = sessionStorage.getItem("token");
+  temp.accessToken = JSON.parse(sessionStorage.getItem("token") || {})?.[key];
   const res = await HTTP("shipping/fee", temp, objShip);
   if (res?.data?.data?.data) {
     shipList.value = res?.data?.data?.data?.map((e) => {
@@ -393,7 +394,7 @@ const setupData = () => {
     chooseCity(false);
     chooseDistrict(false);
     statusList.value = statusLists.filter((e) =>
-      ["Success", "Confirmed","Canceled","Aborted"].includes(e.value)
+      ["New","Success", "Confirmed", "Canceled", "Aborted"].includes(e.value)
     );
   } else {
     const profile = structuredClone(store.getProfile);
@@ -421,14 +422,16 @@ const chooseCarrier = (e) => {
 
 const createSelect = async (url, nameStore, notConvert = false) => {
   if (
-    localStorage.getItem(nameStore) &&
+    JSON.parse(localStorage.getItem(nameStore) || "{}")?.[key] &&
     ["province", "warehouse"].includes(nameStore)
   ) {
-    return JSON.parse(localStorage.getItem(nameStore));
+    return JSON.parse(localStorage.getItem(nameStore)||'{}')?.[key];
   }
   const response = await getList(url, null, null, notConvert);
+  const obj = JSON.parse(localStorage.getItem(nameStore)) || {};
+  obj[key] = response;
   if (["province", "warehouse"].includes(nameStore)) {
-    localStorage.setItem(nameStore, JSON.stringify(response));
+    localStorage.setItem(nameStore, JSON.stringify(obj));
   }
   return response;
 };
@@ -480,9 +483,14 @@ const createOrder = async () => {
   objEdit.value.productList = objEdit.value.products;
   objEdit.value.status = objEdit.value.statusCode;
   const temp = structuredClone(store.getBody);
-  temp.accessToken = sessionStorage.getItem("token");
+  temp.accessToken = JSON.parse(sessionStorage.getItem("token") || {})?.[key];
   delete temp.data;
-  const res = await HTTP("order/add", temp, structuredClone(objEdit.value),totalFee.value);
+  const res = await HTTP(
+    "order/add",
+    temp,
+    structuredClone(objEdit.value),
+    totalFee.value
+  );
   if (res.data.data.code) {
     success.value = `Thêm`;
     message.value = "Vui lòng đợi hệ thống";
@@ -507,7 +515,7 @@ const numberValidate = () => {
 const editOrder = async () => {
   emit("status", true);
   const temp = structuredClone(store.getBody);
-  temp.accessToken = sessionStorage.getItem("token");
+  temp.accessToken = JSON.parse(sessionStorage.getItem("token") || {})?.[key];
   delete temp.data;
   const { description, privateDescription, id, statusCode } = objEdit.value;
   const res = await HTTP("order/update", temp, {

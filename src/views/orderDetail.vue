@@ -202,12 +202,6 @@ const totalFee = computed(() => {
   const productFee = props.order?.calcTotalMoney || 0;
   return shipFee + productFee;
 });
-watch(
-  () => noteTooltip.value,
-  (v) => {
-    console.log(v);
-  }
-);
 
 const color = (value) => {
   if (value === "Success") return "text-green-600";
