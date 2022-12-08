@@ -56,7 +56,7 @@ const getToken = async () => {
   localStorage.setItem("infoApp", JSON.stringify(result));
   objToken[key] = response.data.data.accessToken;
   sessionStorage.setItem("token", JSON.stringify(objToken));
-  saveConfig({ ...obj, token });
+  saveConfig({ ...obj, token:response.data.data.accessToken });
 };
 watch(time, (val) => {
   if (!val) {
